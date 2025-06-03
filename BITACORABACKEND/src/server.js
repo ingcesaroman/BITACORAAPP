@@ -7,6 +7,7 @@ const connectDB = require('./config/database');
 const Bitacora = require('./models/Bitacora');
 const mongoose = require('mongoose');
 const exportBitacoraToExcel = require('./utils/exportToExcel');
+const { exec } = require('child_process');
 require('dotenv').config();
 
 const app = express();
@@ -572,6 +573,18 @@ app.post('/api/bitacora/:id/export-excel', async (req, res) => {
     }
 });
 
+// Endpoint para resetear la base de datos
+app.post('/api/bitacora/reset-db', (req, res) => {
+  exec('node src/scripts/initDb.js', (error, stdout, stderr) => {
+    if (error) {
+      console.error('Error ejecutando initDb.js:', error);
+      return res.status(500).json({ error: 'Error al limpiar la base de datos', details: stderr });
+    }
+    console.log('initDb.js ejecutado correctamente:', stdout);
+    res.json({ message: 'Base de datos limpiada exitosamente', output: stdout });
+  });
+});
+
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
-}); 
+});
